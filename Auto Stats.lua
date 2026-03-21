@@ -1,12 +1,10 @@
--- auto stats (versão igualitária)
+-- auto stats (versão igualitária, GUI persistente, sem verificações quando desativado)
 -- Script para Delta Executor (Roblox)
 
--- Cria a interface gráfica
-local player = game:GetService("Players").LocalPlayer
+-- Cria a interface gráfica no CoreGui (persiste após morte)
 local gui = Instance.new("ScreenGui")
 gui.Name = "AutoStatsGui"
-local parent = player:FindFirstChild("PlayerGui") or game:GetService("CoreGui")
-gui.Parent = parent
+gui.Parent = game:GetService("CoreGui")
 
 -- Frame principal (arrastável)
 local frame = Instance.new("Frame")
@@ -22,7 +20,7 @@ frame.Parent = gui
 local title = Instance.new("TextLabel")
 title.Size = UDim2.new(1, 0, 0, 30)
 title.BackgroundTransparency = 1
-title.Text = "Auto Stats"  -- Alterado para apenas "Auto Stats"
+title.Text = "Auto Stats"
 title.TextColor3 = Color3.fromRGB(255, 255, 255)
 title.Font = Enum.Font.SourceSansBold
 title.TextSize = 22
@@ -32,9 +30,9 @@ title.Parent = frame
 local toggleButton = Instance.new("TextButton")
 toggleButton.Size = UDim2.new(0, 160, 0, 40)
 toggleButton.Position = UDim2.new(0.5, -80, 0.5, -10)
-toggleButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)  -- vermelho = desativado (agora inicia desligado)
+toggleButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)  -- começa vermelho (desativado)
 toggleButton.Text = "Desativado"
-toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+toggleButton.TextColor3 = Color3.fromRGB(0, 0, 0)
 toggleButton.Font = Enum.Font.SourceSans
 toggleButton.TextSize = 20
 toggleButton.Parent = frame
@@ -47,51 +45,68 @@ local function updateButton()
 	if enabled then
 		toggleButton.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
 		toggleButton.Text = "Ativado"
-		toggleButton.TextColor3 = Color3.fromRGB(0, 0, 0)
 	else
 		toggleButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
 		toggleButton.Text = "Desativado"
-		toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 	end
 end
 updateButton()
 
--- Alterna estado ao clicar
-toggleButton.MouseButton1Click:Connect(function()
-	enabled = not enabled
-	updateButton()
-end)
-
 -- Função que gasta apenas múltiplos de 4 igualmente
 local function spendPoints(total)
-	-- Calcula o maior múltiplo de 4 menor ou igual a total
 	local multiple = math.floor(total / 4) * 4
-	if multiple < 4 then return end  -- não há múltiplo suficiente
+	if multiple < 4 then return end
+	local cada = multiple / 4
 
-	local cada = multiple / 4  -- quantidade para cada atributo
-
-	-- Obtém o remote
+	local player = game:GetService("Players").LocalPlayer
 	local startevent = player:WaitForChild("startevent")
 
-	-- Dispara os remotes com o mesmo valor para todos
 	startevent:FireServer("addstat", "chakra", cada)
 	startevent:FireServer("addstat", "ninjutsu", cada)
 	startevent:FireServer("addstat", "taijutsu", cada)
 	startevent:FireServer("addstat", "health", cada)
 end
 
--- Aguarda a existência do caminho de pontos
-local statsFolder = player:WaitForChild("statz")
-local masteryFolder = statsFolder:WaitForChild("mastery")
-local pointsValue = masteryFolder:WaitForChild("points")
+-- Aguarda o jogador e os objetos necessários
+local function start()
+	local player = game:GetService("Players").LocalPlayer
+	if not player then
+		player = game:GetService("Players").PlayerAdded:Wait()
+	end
+	local statsFolder = player:WaitForChild("statz")
+	local masteryFolder = statsFolder:WaitForChild("mastery")
+	local pointsValue = masteryFolder:WaitForChild("points")
 
--- Loop principal de verificação
-while true do
-	if enabled then
+	-- Loop principal: só executa quando enabled = true
+	while true do
+		-- Se desativado, fica em espera até que enabled seja true
+		while not enabled do
+			wait(0.5)  -- espera sem consumir CPU intensivamente
+		end
+		
+		-- Ativado: verifica e gasta pontos
 		local pontos = pointsValue.Value
 		if pontos >= 4 then
 			spendPoints(pontos)
 		end
+		wait(0.5)
 	end
-	wait(0.5)  -- verifica a cada 0.5 segundos
 end
+
+-- Inicia o monitoramento quando o jogador carregar
+local player = game:GetService("Players").LocalPlayer
+if player then
+	start()
+else
+	game:GetService("Players").PlayerAdded:Connect(function(plr)
+		if plr == game:GetService("Players").LocalPlayer then
+			start()
+		end
+	end)
+end
+
+-- Alterna estado ao clicar (precisa estar após a definição das funções)
+toggleButton.MouseButton1Click:Connect(function()
+	enabled = not enabled
+	updateButton()
+end)

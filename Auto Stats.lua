@@ -32,7 +32,7 @@ toggleButton.Size = UDim2.new(0, 160, 0, 40)
 toggleButton.Position = UDim2.new(0.5, -80, 0.5, -10)
 toggleButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)  -- começa vermelho (desativado)
 toggleButton.Text = "Desativado"
-toggleButton.TextColor3 = Color3.fromRGB(0, 0, 0)
+toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 toggleButton.Font = Enum.Font.SourceSans
 toggleButton.TextSize = 20
 toggleButton.Parent = frame
@@ -45,12 +45,20 @@ local function updateButton()
 	if enabled then
 		toggleButton.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
 		toggleButton.Text = "Ativado"
+		toggleButton.TextColor3 = Color3.fromRGB(0, 0, 0)
 	else
 		toggleButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
 		toggleButton.Text = "Desativado"
+		toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 	end
 end
 updateButton()
+
+-- Alterna estado ao clicar (DEFINIDO ANTES DO LOOP INFINITO)
+toggleButton.MouseButton1Click:Connect(function()
+	enabled = not enabled
+	updateButton()
+end)
 
 -- Função que gasta apenas múltiplos de 4 igualmente
 local function spendPoints(total)
@@ -67,7 +75,7 @@ local function spendPoints(total)
 	startevent:FireServer("addstat", "health", cada)
 end
 
--- Aguarda o jogador e os objetos necessários
+-- Aguarda o jogador e os objetos necessários, e inicia o loop principal
 local function start()
 	local player = game:GetService("Players").LocalPlayer
 	if not player then
@@ -93,7 +101,7 @@ local function start()
 	end
 end
 
--- Inicia o monitoramento quando o jogador carregar
+-- Inicia o monitoramento quando o jogador carregar (após conectar o botão)
 local player = game:GetService("Players").LocalPlayer
 if player then
 	start()
@@ -104,9 +112,3 @@ else
 		end
 	end)
 end
-
--- Alterna estado ao clicar (precisa estar após a definição das funções)
-toggleButton.MouseButton1Click:Connect(function()
-	enabled = not enabled
-	updateButton()
-end)

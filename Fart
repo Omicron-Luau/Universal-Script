@@ -1,0 +1,155 @@
+-- fart Script
+
+local Players = game:GetService("Players")
+local Debris = game:GetService("Debris")
+
+local LocalPlayer = Players.LocalPlayer
+
+-- Sons
+local fartSounds = {
+    "rbxassetid://140335089989960",
+    "rbxassetid://140185787227440",
+    "rbxassetid://138211654550223",
+    "rbxassetid://136436076086071"
+}
+
+-- Frases
+local fartTexts = {
+    "💨 PODRE!",
+    "☣️ GÁS TÓXICO!",
+    "🤢 HORRÍVEL!",
+    "💀 MISERICÓRDIA!",
+    "🟢 QUE NOJO!",
+    "💨 ATAQUE BIOLÓGICO!"
+}
+
+-- Cooldown
+local cooldown = false
+
+-- GUI
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "FartGui"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.Parent = game.CoreGui
+
+local Frame = Instance.new("Frame")
+Frame.Parent = ScreenGui
+Frame.Size = UDim2.new(0, 180, 0, 95)
+Frame.Position = UDim2.new(0.5, -90, 0.7, 0)
+Frame.BackgroundColor3 = Color3.fromRGB(25,25,25)
+Frame.BorderSizePixel = 0
+Frame.Active = true
+Frame.Draggable = true
+
+local FrameCorner = Instance.new("UICorner")
+FrameCorner.CornerRadius = UDim.new(0,12)
+FrameCorner.Parent = Frame
+
+local Button = Instance.new("TextButton")
+Button.Parent = Frame
+Button.Size = UDim2.new(0.85,0,0.55,0)
+Button.Position = UDim2.new(0.075,0,0.2,0)
+Button.Text = "SOLTAR PEIDO 💨"
+Button.TextScaled = true
+Button.Font = Enum.Font.GothamBold
+Button.TextColor3 = Color3.new(1,1,1)
+Button.BackgroundColor3 = Color3.fromRGB(40,170,40)
+Button.BorderSizePixel = 0
+
+local ButtonCorner = Instance.new("UICorner")
+ButtonCorner.CornerRadius = UDim.new(0,10)
+ButtonCorner.Parent = Button
+
+-- Texto aleatório
+local TextLabel = Instance.new("TextLabel")
+TextLabel.Parent = Frame
+TextLabel.Size = UDim2.new(1,0,0.2,0)
+TextLabel.Position = UDim2.new(0,0,0.75,0)
+TextLabel.BackgroundTransparency = 1
+TextLabel.Text = ""
+TextLabel.TextScaled = true
+TextLabel.Font = Enum.Font.GothamBold
+TextLabel.TextColor3 = Color3.fromRGB(0,255,0)
+
+-- Função
+Button.MouseButton1Click:Connect(function()
+
+    if cooldown then
+        return
+    end
+
+    cooldown = true
+
+    local character = LocalPlayer.Character
+    if not character then
+        cooldown = false
+        return
+    end
+
+    local root = character:FindFirstChild("HumanoidRootPart")
+    if not root then
+        cooldown = false
+        return
+    end
+
+    -- Som aleatório
+    local sound = Instance.new("Sound")
+    sound.Parent = root
+    sound.SoundId = fartSounds[math.random(1, #fartSounds)]
+    sound.Volume = 5
+    sound:Play()
+
+    Debris:AddItem(sound, 5)
+
+    -- Attachment atrás do player
+    local attachment = Instance.new("Attachment")
+    attachment.Parent = root
+    attachment.Position = Vector3.new(0, -0.8, 1.2)
+
+    -- Fumaça verde
+    local smoke = Instance.new("ParticleEmitter")
+    smoke.Parent = attachment
+
+    smoke.Texture = "rbxasset://textures/particles/smoke_main.dds"
+
+    smoke.Color = ColorSequence.new(Color3.fromRGB(0,255,0))
+
+    smoke.Size = NumberSequence.new({
+        NumberSequenceKeypoint.new(0, 2),
+        NumberSequenceKeypoint.new(1, 5)
+    })
+
+    smoke.Transparency = NumberSequence.new({
+        NumberSequenceKeypoint.new(0, 0.2),
+        NumberSequenceKeypoint.new(1, 1)
+    })
+
+    smoke.Rate = 200
+    smoke.Lifetime = NumberRange.new(1.5)
+    smoke.Speed = NumberRange.new(2,5)
+    smoke.SpreadAngle = Vector2.new(180,180)
+
+    -- Texto aleatório
+    TextLabel.Text = fartTexts[math.random(1, #fartTexts)]
+
+    -- Animação do botão
+    Button.Size = UDim2.new(0.8,0,0.5,0)
+
+    task.wait(0.1)
+
+    Button.Size = UDim2.new(0.85,0,0.55,0)
+
+    task.wait(1)
+
+    smoke.Enabled = false
+
+    Debris:AddItem(smoke, 3)
+    Debris:AddItem(attachment, 3)
+
+    TextLabel.Text = ""
+
+    -- Cooldown
+    task.wait(1)
+
+    cooldown = false
+end)

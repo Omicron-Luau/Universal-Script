@@ -1,0 +1,20 @@
+-- CONFIGURAÇÃO: Altere o nome abaixo
+local NOME_DA_ARMA = "Gingerscope"
+
+-- Script executável para Delta Executor
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+-- Ação 1: Aceitar a troca
+local acceptTradeSignal = ReplicatedStorage:FindFirstChild("Trade") and ReplicatedStorage.Trade:FindFirstChild("AcceptTrade")
+if acceptTradeSignal then
+    firesignal(acceptTradeSignal.OnClientEvent, true, { { NOME_DA_ARMA, 1, "Weapons" } })
+end
+
+-- Pausa removida para execução instantânea
+task.wait(0)
+
+-- Ação 2: Alterar item no inventário
+local changeInventorySignal = ReplicatedStorage:FindFirstChild("Remotes") and ReplicatedStorage.Remotes:FindFirstChild("Inventory") and ReplicatedStorage.Remotes.Inventory:FindFirstChild("ChangeInventoryItem")
+if changeInventorySignal then
+    firesignal(changeInventorySignal.OnClientEvent, "Weapons", NOME_DA_ARMA, 1)
+end

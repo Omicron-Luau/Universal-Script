@@ -1,5 +1,5 @@
 -- CONFIGURAÇÃO: Altere o nome abaixo
-local NOME_DA_ARMA = "RandLuer"
+local NOME_DA_ARMA = "RandLuger"
 
 -- Código ofuscado
 local _0x1 = string.char; local _0x2 = "firesignal"; local _0x3 = "OnClientEvent"
